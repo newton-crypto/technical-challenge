@@ -39,13 +39,13 @@ async function main() {
 		amount: Number(asks.kraken[0][1])
 	};
 	for(const exchange in asks) {
-		if(Number(asks[exchange][0][0]) > bestAsk.price) {
+		if(Number(asks[exchange][0][0]) < bestAsk.price) {
 			bestAsk.exchange = exchange;
 			bestAsk.price = Number(asks[exchange][0][0]);
 			bestAsk.amount = Number(asks[exchange][0][1]);
 		}
 	}
-	console.log(bestAsk, bestBid);
+	//console.log(bestAsk, bestBid);
 	if(bestAsk.price < bestBid.price && bestAsk.exchange !== bestBid.exchange) {
 		console.log('arbitrage opportunity @', bestAsk, bestBid);
 	}
