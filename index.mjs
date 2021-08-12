@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 
 let bids = {};
 let asks = {};
-//todo: make functions return bids and asks to avoid global variable
+//todo: make functions return bids and asks to avoid global variable. then again, this is miniscually faster
 async function kraken() {
 	let result = await (await fetch('https://api.kraken.com/0/public/Depth?pair=XBTUSD')).json();
 	bids.kraken = result.result.XXBTZUSD.bids;
@@ -16,11 +16,26 @@ async function ftx() {
 	asks.ftx = result.result.asks;
 }
 
+async function binance() {
+	let result = await (await fetch('https://api.binance.com/api/v3/depth?symbol=BTCUSDT')).json();
+	bids.binance = result.bids;
+	asks.binance = result.asks;
+}
+
+async function coinbase() {
+	let result = await (await fetch('https://api-public.sandbox.pro.coinbase.com/products/BTC-USD/book?level=2')).json();
+	bids.coinbase = result.bids;
+	asks.coinbase = result.asks;
+}
+
 async function main() {
 	await Promise.all([
 		kraken(),
-		ftx()
+		ftx(),
+		binance(),
+		coinbase()
 	]);
+	//technically don't need to wait for all api calls to finish first and then determine best bid / ask. can do it as data arrives asynchronously
 	let bestBid = {
 		exchange: 'kraken',
 		price: Number(bids.kraken[0][0]),
@@ -46,7 +61,7 @@ async function main() {
 		}
 	}
 	//console.log(bestAsk, bestBid);
-	if(bestAsk.price < bestBid.price && bestAsk.exchange !== bestBid.exchange) {
+	if(bestAsk.price < bestBid.price) {
 		console.log('arbitrage opportunity @', bestAsk, bestBid);
 	}
 	setTimeout(main, 1000);
